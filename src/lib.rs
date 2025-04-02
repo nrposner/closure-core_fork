@@ -16,7 +16,7 @@ use std::collections::VecDeque;
 use rayon::prelude::*;
 
 /// Implements range over Rint-friendly generic integer type U
-struct IntegerRange<U>
+pub struct IntegerRange<U>
 where
     U: Integer + Copy
 {
@@ -42,14 +42,54 @@ where
     }
 }
 
-/// Creates an iterator over the space of U type integers 
-fn range_u<U: Integer + Copy>(start: U, end: U) -> IntegerRange<U> {
+/// Creates an iterator over a range of integers of type `U`.
+///
+/// This function generates an iterator that yields integers starting from `start`
+/// up to, but not including, `end`. The integers are of a generic type `U` that
+/// must implement the `Integer` and `Copy` traits.
+///
+/// # Parameters
+///
+/// - `start`: The starting value of the range (inclusive).
+/// - `end`: The ending value of the range (exclusive).
+///
+/// # Returns
+///
+/// An `IntegerRange<U>` iterator that yields integers from `start` to `end - 1`.
+///
+/// # Example
+///
+/// ```rust
+/// use closure_core::range_u;
+/// let range = range_u(0, 5);
+/// for i in range {
+///     println!("{}", i);
+/// }
+/// // This will print numbers 0 through 4.
+/// ```
+pub fn range_u<U: Integer + Copy>(start: U, end: U) -> IntegerRange<U> {
     IntegerRange {current: start, end}
 }
 
-// Define the Combination struct
+/// Represents a combination of values tracking the progress of the CLOSURE algorithm.
+///
+/// This struct is used to store a combination of integer values along with
+/// their running sum and running second moment (M2), which are useful for
+/// calculating statistical measures like the mean and standard deviation.
+///
+/// # Type Parameters
+///
+/// - `U`: A Rint-compatible generic integer type
+/// - `T`: A floating-point generic type converted from U
+///
+/// # Fields
+///
+/// - `values`: A vector of integer values representing the combination.
+/// - `running_sum`: The running sum of the values in the combination.
+/// - `running_m2`: The running second moment (M2) of the values, used for
+///   calculating variance and standard deviation.
 #[derive(Clone)]
-struct Combination<T, U> {
+struct Combination<U, T> {
     values: Vec<U>,
     running_sum: T,
     running_m2: T,
