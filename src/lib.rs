@@ -307,7 +307,36 @@ where
         .collect()
 }
 
-// Collect all valid combinations from a starting point
+/// Collects all valid combinations from a starting point using a depth-first search approach.
+///
+/// This function is a lower-level component of the CLOSURE algorithm, designed to explore
+/// all possible combinations of integer values that meet specified statistical criteria.
+/// It uses a stack-based depth-first search to efficiently traverse the solution space.
+///
+/// # Type Parameters
+///
+/// - `T`: A floating-point type used for calculations.
+/// - `U`: An integer type representing the scale values.
+///
+/// # Parameters
+///
+/// - `start_combination`: A vector of integers representing the initial combination to start from.
+/// - `running_sum_init`: The initial running sum of the values in the starting combination.
+/// - `running_m2_init`: The initial running second moment (M2) of the values, used for variance calculation.
+/// - `n`: The total number of values in each combination.
+/// - `target_sum_upper`: The upper bound for the target sum of the combination.
+/// - `target_sum_lower`: The lower bound for the target sum of the combination.
+/// - `sd_upper`: The upper bound for the standard deviation of the combination.
+/// - `sd_lower`: The lower bound for the standard deviation of the combination.
+/// - `scale_min_sum_t`: A precomputed vector of minimum scale sums for each position.
+/// - `scale_max_sum_t`: A precomputed vector of maximum scale sums for each position.
+/// - `_n_minus_1`: The total number of values minus one, used for internal calculations.
+/// - `scale_max_plus_1`: The maximum scale value plus one, used for range operations.
+///
+/// # Returns
+///
+/// A vector of vectors, where each inner vector represents a valid combination of integer
+/// values that meet the specified criteria.
 #[inline]
 #[allow(clippy::too_many_arguments)]
 fn dfs_branch<T, U>(
