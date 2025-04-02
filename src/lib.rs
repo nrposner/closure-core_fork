@@ -15,13 +15,40 @@ use num::{Float, FromPrimitive, Integer, NumCast, ToPrimitive};
 use std::collections::VecDeque;
 use rayon::prelude::*;
 
-/// Implements range over Rint-friendly generic integer type U
+/// An iterator over a range of Rint-friendly generic integers `U`.
+///
+/// The `IntegerRange` struct provides an iterator that yields integers
+/// starting from a specified `current` value up to, but not including,
+/// an `end` value. The integers are of a generic type `U` that must
+/// implement the `Integer` and `Copy` traits.
+///
+/// # Type Parameters
+///
+/// - `U`: A generic integer type that implements the `Integer` and `Copy` traits.
+///
+/// # Fields
+///
+/// - `current`: The current value of the iterator.
+/// - `end`: The end value of the iterator (exclusive).
+///
+/// # Example
+///
+/// ```rust
+/// use closure_core::IntegerRange;
+/// use num::Integer;
+///
+/// let mut range = IntegerRange { current: 0, end: 5 };
+/// while let Some(value) = range.next() {
+///     println!("{}", value);
+/// }
+/// // This will print numbers 0 through 4.
+/// ```
 pub struct IntegerRange<U>
 where
     U: Integer + Copy
 {
-    current: U,
-    end: U,
+    pub current: U,
+    pub end: U,
 }
 
 impl<U> Iterator for IntegerRange<U>
@@ -30,7 +57,29 @@ where
 {
     type Item = U;
 
-    /// Increment over U type integers
+    /// Returns the next integer in the range, or `None` if the end is reached.
+    ///
+    /// The `next` method increments the current value by one and returns it,
+    /// until the current value reaches the end of the range. Once the end is
+    /// reached, it returns `None`.
+    ///
+    /// # Returns
+    ///
+    /// - `Some(U)`: The next integer in the range.
+    /// - `None`: If the end of the range is reached.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use closure_core::IntegerRange;
+    /// use num::Integer;
+    ///
+    /// let mut range = IntegerRange { current: 0, end: 3 };
+    /// assert_eq!(range.next(), Some(0));
+    /// assert_eq!(range.next(), Some(1));
+    /// assert_eq!(range.next(), Some(2));
+    /// assert_eq!(range.next(), None);
+    /// ```
     fn next(&mut self) -> Option<U> {
         if self.current < self.end {
             let next = self.current;
@@ -95,12 +144,85 @@ struct Combination<U, T> {
     running_m2: T,
 }
 
+/// Calculates the number of initial combinations for a given scale range.
+///
+/// This function computes the total number of initial combinations possible
+/// within a specified range defined by `scale_min` and `scale_max`. The
+/// calculation is based on the formula for the sum of the first `n` natural
+/// numbers, where `n` is the size of the range.
+///
+/// # Parameters
+///
+/// - `scale_min`: The minimum value of the scale range (inclusive).
+/// - `scale_max`: The maximum value of the scale range (inclusive).
+///
+/// # Returns
+///
+/// The total number of initial combinations as an `i32`.
+///
+/// # Example
+///
+/// ```rust
+/// use closure_core::count_initial_combinations;
+///
+/// let combinations = count_initial_combinations(1, 3);
+/// assert_eq!(combinations, 6);
+/// ```
 pub fn count_initial_combinations(scale_min: i32, scale_max: i32) -> i32 {
     let range_size = scale_max - scale_min + 1;
     (range_size * (range_size + 1)) / 2
 }
 
-// takes in summary statistics, top level function
+/// Executes the CLOSURE algorithm in parallel to find all valid combinations.
+///
+/// This function takes summary statistics and scale parameters to compute
+/// all possible combinations of integer values that match the given mean
+/// and standard deviation within specified rounding errors. It leverages
+/// parallel processing to efficiently explore the solution space.
+///
+/// # Type Parameters
+///
+/// - `T`: A floating-point type used for calculations.
+/// - `U`: An Rint-friendly integer type representing the scale values.
+///
+/// # Parameters
+///
+/// - `mean`: The target mean of the combinations.
+/// - `sd`: The target standard deviation of the combinations.
+/// - `n`: The number of values in each combination.
+/// - `scale_min`: The minimum scale value (inclusive).
+/// - `scale_max`: The maximum scale value (inclusive).
+/// - `rounding_error_mean`: The allowable rounding error for the mean.
+/// - `rounding_error_sd`: The allowable rounding error for the standard deviation.
+///
+/// # Returns
+///
+/// A vector of vectors, where each inner vector represents a valid combination
+/// of integer values that meet the specified criteria.
+///
+/// # Example
+///
+/// ```rust
+/// use closure_core::dfs_parallel;
+/// use num::FromPrimitive;
+///
+/// let combinations = dfs_parallel(
+///     10.0, 2.0, 3, 1, 5, 0.1, 0.1
+/// );
+/// assert!(combinations.is_empty()); // If there are no results, the outer vector will be empty
+/// ```
+///
+/// ```rust
+/// use closure_core::dfs_parallel;
+/// use num::FromPrimitive;
+///
+/// let combinations = dfs_parallel(
+///     3.5, 0.57, 100, 0, 7, 0.05, 0.05
+/// );
+///
+/// assert_eq!(combinations.len(), 568); // If results are found, each one will be stored as a
+/// Vec<U> inside the outer vector
+/// ```
 pub fn dfs_parallel<T, U>(
     mean: T,
     sd: T,
@@ -286,4 +408,3 @@ mod tests {
         assert_eq!(count_initial_combinations(1, 4), 10);
     }
 }
-
